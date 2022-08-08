@@ -38,31 +38,6 @@ function addItem() {
     .catch((err) => console.log("Fetch error " + err));
 }
 
-function scrapeTruckItem() {
-  axios
-    .get(
-      `https://www.otomoto.pl/ciezarowe/uzytkowe/mercedes-benz/od-+2014/q-actros?search%5Bfilter_enum_damaged%5D=0&search%5Border%5D=created_at+%3Adesc&page=${initialPage}`
-    )
-    .then((response) => {
-      const $ = cheerio.load(response.data);
-      const featuredArticles = $("main article");
-
-      for (let i = 0; i < featuredArticles.length; i++) {
-        let postLinkWrapper = $(featuredArticles[i])
-          .find("div h2 a")
-          .attr("href");
-        let id = $(featuredArticles[i]).attr("id");
-        console.log("\n" + `Item url - ${postLinkWrapper}`);
-        console.log("\n" + `Item id - ${id}`);
-        console.log("\n----\n\n");
-      }
-      adsCounts.push(featuredArticles.length);
-      console.log("count array", adsCounts);
-      console.log("length : ", featuredArticles.length);
-    })
-    .catch((err) => console.log("Fetch error " + err));
-}
-
 //fetch initial url
 function fetchAds() {
   axios
@@ -139,7 +114,7 @@ function getAllAds() {
   }
 }
 
-//addItem();
+// addItem();
 // fetchAds();
 // getTotalAdsCount();
 // getNextPage();
