@@ -30,7 +30,7 @@ function addItem() {
           .find("div h2 a")
           .attr("href");
         let id = $(featuredArticles[i]).attr("id");
-        console.log("\n" + `Link - ${postLinkWrapper}`);
+        console.log("\n" + `Item url - ${postLinkWrapper}`);
         console.log("\n" + `id - ${id}`);
         console.log("\n----\n\n");
       }
@@ -52,7 +52,15 @@ function fetchAds() {
         let postLinkWrapper = $(featuredArticles[i])
           .find("div h2 a")
           .attr("href");
+        let title = $(featuredArticles[i]).find("div h2 a").text();
         let id = $(featuredArticles[i]).attr("id");
+        let price = $(featuredArticles[i])
+          .find(
+            "div.e1b25f6f9.ooa-1w7uott-Text.eu5v0x0 span.ooa-epvm6.e1b25f6f8"
+          )
+          .text();
+        console.log("\n" + `title - ${title}`);
+        console.log("\n" + `price - ${price}`);
         console.log("\n" + `Item url - ${postLinkWrapper}`);
         console.log("\n" + `Item id - ${id}`);
         console.log("\n----\n\n");
@@ -118,7 +126,7 @@ function getAllAds() {
 // fetchAds();
 // getTotalAdsCount();
 // getNextPage();
-// getAllAds();
+getAllAds();
 // scrapeTruckItem(
 //   "https://www.otomoto.pl/oferta/mercedes-benz-actros-1842ls-ID6EJjNc.html"
 // );
