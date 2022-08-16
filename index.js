@@ -4,6 +4,8 @@ const cheerio = require("cheerio");
 let initialPage = 0;
 
 function getTotalAdsCount() {
+  let totalPage;
+
   axios
     .get(
       `https://www.otomoto.pl/ciezarowe/uzytkowe/mercedes-benz/od-+2014/q-actros?search%5Bfilter_enum_damaged%5D=0&search%5Border%5D=created_at+%3Adesc&page=${initialPage}`
@@ -11,7 +13,6 @@ function getTotalAdsCount() {
     .then((response) => {
       const $ = cheerio.load(response.data);
       const featuredArticles = $("main article");
-
       console.log("total ads ", featuredArticles.length);
     })
     .catch((err) => console.log("Fetch error " + err));
@@ -40,6 +41,8 @@ function addItem() {
 
 //fetch initial url
 function fetchAds() {
+  let itemArray = [];
+  // let itemObj = {};
   axios
     .get(
       `https://www.otomoto.pl/ciezarowe/uzytkowe/mercedes-benz/od-+2014/q-actros?search%5Bfilter_enum_damaged%5D=0&search%5Border%5D=created_at+%3Adesc&page=${initialPage}`
@@ -52,18 +55,25 @@ function fetchAds() {
         let postLinkWrapper = $(featuredArticles[i])
           .find("div h2 a")
           .attr("href");
-        let title = $(featuredArticles[i]).find("div h2 a").text();
-        let id = $(featuredArticles[i]).attr("id");
-        let price = $(featuredArticles[i])
-          .find(
-            "div.e1b25f6f9.ooa-1w7uott-Text.eu5v0x0 span.ooa-epvm6.e1b25f6f8"
-          )
-          .text();
-        console.log("\n" + `title - ${title}`);
-        console.log("\n" + `price - ${price}`);
-        console.log("\n" + `Item url - ${postLinkWrapper}`);
-        console.log("\n" + `Item id - ${id}`);
-        console.log("\n----\n\n");
+        itemArray.push(postLinkWrapper);
+        // let title = $(featuredArticles[i]).find("div h2 a").text();
+        // let id = $(featuredArticles[i]).attr("id");
+        // let price = $(featuredArticles[i])
+        //   .find(
+        //     "div.e1b25f6f8.ooa-1w7uott-Text.eu5v0x0 span.ooa-epvm6.e1b25f6f7"
+        //   )
+        //   .text();
+
+        // console.log("\n" + `title - ${title}`);
+        // console.log("\n" + `price - ${price}`);
+        // console.log("\n" + `Item url - ${postLinkWrapper}`);
+        // console.log("\n" + `Item id - ${id}`);
+        // console.log("\n----\n\n");
+      }
+      // console.log(itemArray);
+      for (let i = 0; i <= itemArray.length; i++) {
+        scrapeTruckItem(itemArray[i]);
+        // console.log(typeof itemArray[i]);
       }
       console.log("total ads in page ", featuredArticles.length);
     })
@@ -95,14 +105,15 @@ function scrapeTruckItem(itemUrl) {
       ).each((_, elem) => {
         elems.push($(elem).text());
       });
+      // console.log(elems);
       let obj = {
-        title: title.replace(/\n/g, ""),
-        price: price,
-        id: idArray[1].replace(/\n/g, ""),
-        productionDate: elems[4].replace(/\n/g, ""),
-        registraionDate: elems[12].replace(/\n/g, ""),
-        power: elems[7].replace(/\n/g, ""),
-        mileage: elems[5].replace(/\n/g, ""),
+        title: title.replace(/\n/g, "").trim(),
+        price: price.trim(),
+        id: idArray[1].replace(/\n/g, "").trim(),
+        productionDate: elems[4].replace(/\n/g, "").trim(),
+        registraionDate: elems[12].replace(/\n/g, "").trim(),
+        power: elems[7].replace(/\n/g, "").trim(),
+        mileage: elems[5].replace(/\n/g, "").trim(),
       };
       console.log(obj);
     })
@@ -117,7 +128,7 @@ function getNextPage() {
 
 //Scrape all pages, all ads
 function getAllAds() {
-  for (let i = 1; i <= 9; i++) {
+  for (let i = 1; i <= 13; i++) {
     getNextPage();
   }
 }
