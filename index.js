@@ -41,13 +41,13 @@ function addItem() {
 
 //fetch initial url
 function fetchAds() {
-  let itemArray = [];
   // let itemObj = {};
   axios
     .get(
       `https://www.otomoto.pl/ciezarowe/uzytkowe/mercedes-benz/od-+2014/q-actros?search%5Bfilter_enum_damaged%5D=0&search%5Border%5D=created_at+%3Adesc&page=${initialPage}`
     )
     .then((response) => {
+      let itemArray = [];
       const $ = cheerio.load(response.data);
       const featuredArticles = $("main article");
 
@@ -56,24 +56,9 @@ function fetchAds() {
           .find("div h2 a")
           .attr("href");
         itemArray.push(postLinkWrapper);
-        // let title = $(featuredArticles[i]).find("div h2 a").text();
-        // let id = $(featuredArticles[i]).attr("id");
-        // let price = $(featuredArticles[i])
-        //   .find(
-        //     "div.e1b25f6f8.ooa-1w7uott-Text.eu5v0x0 span.ooa-epvm6.e1b25f6f7"
-        //   )
-        //   .text();
-
-        // console.log("\n" + `title - ${title}`);
-        // console.log("\n" + `price - ${price}`);
-        // console.log("\n" + `Item url - ${postLinkWrapper}`);
-        // console.log("\n" + `Item id - ${id}`);
-        // console.log("\n----\n\n");
       }
-      // console.log(itemArray);
       for (let i = 0; i <= itemArray.length; i++) {
         scrapeTruckItem(itemArray[i]);
-        // console.log(typeof itemArray[i]);
       }
       console.log("total ads in page ", featuredArticles.length);
     })
