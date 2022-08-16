@@ -1,27 +1,25 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
+const { GET } = require("./api");
 
 let initialPage = 0;
 
 function getTotalAdsCount() {
-  axios
-    .get(
-      `https://www.otomoto.pl/ciezarowe/uzytkowe/mercedes-benz/od-+2014/q-actros?search%5Bfilter_enum_damaged%5D=0&search%5Border%5D=created_at+%3Adesc&page=${initialPage}`
-    )
+  GET(
+    `https://www.otomoto.pl/ciezarowe/uzytkowe/mercedes-benz/od-+2014/q-actros?search%5Bfilter_enum_damaged%5D=0&search%5Border%5D=created_at+%3Adesc&page=${initialPage}`
+  )
     .then((response) => {
       const $ = cheerio.load(response.data);
       const featuredArticles = $("main article");
-
       console.log("total ads ", featuredArticles.length);
     })
     .catch((err) => console.log("Fetch error " + err));
 }
 
 function addItem() {
-  axios
-    .get(
-      `https://www.otomoto.pl/ciezarowe/uzytkowe/mercedes-benz/od-+2014/q-actros?search%5Bfilter_enum_damaged%5D=0&search%5Border%5D=created_at+%3Adesc&page=${initialPage}`
-    )
+  GET(
+    `https://www.otomoto.pl/ciezarowe/uzytkowe/mercedes-benz/od-+2014/q-actros?search%5Bfilter_enum_damaged%5D=0&search%5Border%5D=created_at+%3Adesc&page=${initialPage}`
+  )
     .then((response) => {
       const $ = cheerio.load(response.data);
       const featuredArticles = $("main article");
@@ -38,12 +36,10 @@ function addItem() {
     .catch((err) => console.log("Fetch error " + err));
 }
 
-//fetch initial url
 function fetchAds() {
-  axios
-    .get(
-      `https://www.otomoto.pl/ciezarowe/uzytkowe/mercedes-benz/od-+2014/q-actros?search%5Bfilter_enum_damaged%5D=0&search%5Border%5D=created_at+%3Adesc&page=${initialPage}`
-    )
+  GET(
+    `https://www.otomoto.pl/ciezarowe/uzytkowe/mercedes-benz/od-+2014/q-actros?search%5Bfilter_enum_damaged%5D=0&search%5Border%5D=created_at+%3Adesc&page=${initialPage}`
+  )
     .then((response) => {
       const $ = cheerio.load(response.data);
       const featuredArticles = $("main article");
@@ -52,61 +48,50 @@ function fetchAds() {
         let postLinkWrapper = $(featuredArticles[i])
           .find("div h2 a")
           .attr("href");
-        let title = $(featuredArticles[i]).find("div h2 a").text();
-        let id = $(featuredArticles[i]).attr("id");
-        let price = $(featuredArticles[i])
-          .find(
-            "div.e1b25f6f9.ooa-1w7uott-Text.eu5v0x0 span.ooa-epvm6.e1b25f6f8"
-          )
-          .text();
-        console.log("\n" + `title - ${title}`);
-        console.log("\n" + `price - ${price}`);
-        console.log("\n" + `Item url - ${postLinkWrapper}`);
-        console.log("\n" + `Item id - ${id}`);
-        console.log("\n----\n\n");
+        scrapeTruckItem(postLinkWrapper);
       }
-      console.log("total ads in page ", featuredArticles.length);
     })
     .catch((err) => console.log("Fetch error " + err));
 }
 
 function scrapeTruckItem(itemUrl) {
-  axios
-    .get(itemUrl)
+  GET(itemUrl)
     .then((response) => {
       let elems = [];
-      let idArray = [];
 
       const $ = cheerio.load(response.data);
 
-      let title = $(
-        "div.offer-summary span.offer-title.big-text.fake-title"
+      let title = $("div.offer-summary span.offer-title.big-text.fake-title")
+        .text()
+        .replace(/\n/g, "")
+        .trim();
+
+      let price = $("div.offer-summary div.price-wrapper div.offer-price")
+        .attr("data-price")
+        .trim();
+
+      let id = $(
+        "div.offer-meta span.offer-meta__item span#ad_id.offer-meta__value"
       ).text();
 
-      let price = $("div.offer-summary div.price-wrapper div.offer-price").attr(
-        "data-price"
-      );
+      $("li.offer-params__item div.offer-params__value").each((_, elem) => {
+        elems.push($(elem).text().replace(/\n/g, "").trim());
+      });
 
-      $("div.offer-meta span.offer-meta__item").each((_, elem) => {
-        idArray.push($(elem).text());
-      });
-      $(
-        "div.parametersArea div.offer-params ul.offer-params__list li div"
-      ).each((_, elem) => {
-        elems.push($(elem).text());
-      });
       let obj = {
-        title: title.replace(/\n/g, ""),
+        title: title,
         price: price,
-        id: idArray[1].replace(/\n/g, ""),
-        productionDate: elems[4].replace(/\n/g, ""),
-        registraionDate: elems[12].replace(/\n/g, ""),
-        power: elems[7].replace(/\n/g, ""),
-        mileage: elems[5].replace(/\n/g, ""),
+        id: id,
+        productionDate: elems[4],
+        registraionDate: elems[12],
+        power: elems[7],
+        mileage: elems[5],
       };
       console.log(obj);
     })
-    .catch((err) => console.log("Fetch error " + err));
+    .catch((err) => {
+      console.log("Fetch error " + err);
+    });
 }
 
 //iterate over pages
@@ -117,7 +102,7 @@ function getNextPage() {
 
 //Scrape all pages, all ads
 function getAllAds() {
-  for (let i = 1; i <= 9; i++) {
+  for (let i = 1; i <= 13; i++) {
     getNextPage();
   }
 }
