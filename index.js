@@ -4,8 +4,6 @@ const cheerio = require("cheerio");
 let initialPage = 0;
 
 function getTotalAdsCount() {
-  let totalPage;
-
   axios
     .get(
       `https://www.otomoto.pl/ciezarowe/uzytkowe/mercedes-benz/od-+2014/q-actros?search%5Bfilter_enum_damaged%5D=0&search%5Border%5D=created_at+%3Adesc&page=${initialPage}`
@@ -39,15 +37,12 @@ function addItem() {
     .catch((err) => console.log("Fetch error " + err));
 }
 
-//fetch initial url
 function fetchAds() {
-  // let itemObj = {};
   axios
     .get(
       `https://www.otomoto.pl/ciezarowe/uzytkowe/mercedes-benz/od-+2014/q-actros?search%5Bfilter_enum_damaged%5D=0&search%5Border%5D=created_at+%3Adesc&page=${initialPage}`
     )
     .then((response) => {
-      let itemArray = [];
       const $ = cheerio.load(response.data);
       const featuredArticles = $("main article");
 
@@ -55,12 +50,8 @@ function fetchAds() {
         let postLinkWrapper = $(featuredArticles[i])
           .find("div h2 a")
           .attr("href");
-        itemArray.push(postLinkWrapper);
+        scrapeTruckItem(postLinkWrapper);
       }
-      for (let i = 0; i <= itemArray.length; i++) {
-        scrapeTruckItem(itemArray[i]);
-      }
-      console.log("total ads in page ", featuredArticles.length);
     })
     .catch((err) => console.log("Fetch error " + err));
 }
@@ -90,7 +81,7 @@ function scrapeTruckItem(itemUrl) {
       ).each((_, elem) => {
         elems.push($(elem).text());
       });
-      // console.log(elems);
+
       let obj = {
         title: title.replace(/\n/g, "").trim(),
         price: price.trim(),
